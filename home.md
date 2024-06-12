@@ -29,7 +29,7 @@ The objective of this challenge is to login with another user account, in this c
 
 In order to find Bender’s email address, it was necessary to discover the domain name. 
 
-After logging in with my account (francesca@mail.com), I checked the calls on BURP. 
+After visiting the home page of the web application, I checked the calls on BURP. 
 
 There was a GET request and the response was a JSON file, where there was the line: 
 
@@ -38,7 +38,7 @@ There was a GET request and the response was a JSON file, where there was the li
 </pre>
 
 
-So, I could assume that the domain name is **juice-sh.op**.
+So, it was obvious to assume that the domain name is **juice-sh.op**.
 
 ![First Image](images/ch1-1.jpg)  
 _Figure 1: GET Request where there is the domain name_
@@ -69,7 +69,7 @@ The objective of this challenge is to change Bender’s password into slurmCl4ss
 Because of the previous challenge, I knew how to login with Bender’s account by exploiting a vulnerability, so I did it by inserting “bender@juice-sh.op’--” in the email line and any password on the password line. 
 
 I went to the “Privacy and Security” section and then to the “Change Password” section. 
-I tried to change the password, but I got the error “401 Unauthorized” because “current password is not correct”; this was expected, because I do not know Bender's current password, since I was able to login with his account by exploiting an SQL injection vulnerability, and not by using his credentials.
+I tried to change the password, but I got the error “401 Unauthorized” because “current password is not correct”; this was expected, because I did not know Bender's current password, since I was able to login with his account by exploiting an SQL injection vulnerability, and not by using his credentials.
 
 By inspecting the HTTP calls of the Password Change on BURP, I noticed that this process happens through an HTTP GET call and that current and new passwords are submitted in clear text: 
 <pre>
@@ -77,7 +77,7 @@ GET /rest/user/change-password?current=test&new=12345&repeat=12345 HTTP/2
 </pre>
 
 ![Figure 3](images/ch2-1.jpg) <br>
-_Figure 3: Request with passwords in cleartext_
+_Figure 3: Request with passwords in clear text_
 
 So, I tried to probe the responses on various inputs using the BURP repeater and, finally, I was able to change the password by submitting: 
 <pre>
@@ -99,21 +99,23 @@ The web application is a store that sells a variety of products, so there must b
 
 To learn more about the DB schema, I decided to analyze the HTTP requests and responses on Burp. 
 In order to do this, I searched several products through the search command on the site: I first search “banana juice” and then “apple’” (the website returned No Results Found). 
-On Burp I notices that there are only two requests regarding these two operations: 
+
+On Burp I noticed that there are only two requests regarding these two operations: 
 
 <pre>
 GET /rest/products/search?q= HTTP/2
 </pre>
 The browser returns as a response a JSON file with all the products that are present 
-on the shop. 
+in the shop. 
 
 <pre>
 GET /api/Quantitys/ HTTP/2
 </pre>
 The browser returns a response as a JSON file with the quantity of each product present in the shop. 
 
+In the request none of the search words appeared. 
 
-I sent the first request to the repeater to observe how the browser responds to requests with different values of the q parameter. 
+I then sent the first request to the repeater to observe how the browser responds to requests with different values of the q parameter and if there is a SQL injection vulnerability.  
 
 By changing the request to 
 <pre>
@@ -129,7 +131,7 @@ GET /rest/products/search?q=banana’ HTTP/2
 the HTTP response is: 
 ![Figure 6](images/ch3-2.jpg)
 
-From this error message, it is obvious that the database behind the shop is a SQLITE database. 
+From this error message, it is obvious that the database behind the shop is a **SQLITE database**. 
 
 At this point, I visited the SQLITE website to learn more about the schema of the SQLITE database and I found out that the schema is stored in a system table called sqlite_master. 
 
@@ -160,7 +162,7 @@ the HTTP Response contained a SQLITE error message saying:
 "SQLITE_ERROR: SELECTs to the left and right of UNION do not have the same number of result columns"
 </pre>
 
-At this point, the objective was  to find the right number of columns.
+At this point, the objective was to find the right number of columns.
 
 I started with the following payload: 
 <pre>
@@ -187,6 +189,7 @@ qwert'))UNION SELECT sql '1','2','3','4','5','6','7','8','9' FROM sqlite_master-
 </pre>
 the browser finally returned the database schema and, consequently, led me to solve the challenge. 
 
+<br>
 
 ## Bibliography 
 
