@@ -1,8 +1,8 @@
 # Report on OWASP Juice Shop 
 
+<br>
 
 ## Introduction
-
 
 The **OWASP Juice Shop** is a web application that presents a wide number of vulnerabilities that are grouped in different categories, based on the type. 
 
@@ -13,6 +13,7 @@ In this report I explain how I managed to solve three challenges:
 2. Change Bender’s password into slurmCl4ssic; 
 3. Exfiltrate the entire DB schema definition via SQL Injection. 
 
+<br>
 
 ## Tools 
 
@@ -20,6 +21,7 @@ I ran the **OWASP Juice Shop** on the hosting provider **Gitpod**.
 To analyze the HTTP requests and responses I used **BURP**, a tool for web application security testing. The Burp’s tool “Repeater” was very useful, because it allowed me to modify HTTP requests and send them again. 
 I also used the **Kali Linux** virtual machine to understand how sqlite3 worked, but I will not go into detail in this report. 
 
+<br>
 
 ## Challenge 1 
 
@@ -58,6 +60,7 @@ _Figure 2: Successful Response_
 
 I was able to login as Bender because of a **SQL injection vulnerability**: to exploit it, I found a parameter that the web application passed through a database and, by carefully embedding a SQL command into the content of the parameter, I tricked the web application into forwarding a malicious query to the database.
 
+<br>
 
 ## Challenge 2 
 
@@ -86,6 +89,7 @@ _Figure 4: Successful HTTP Request_
 
 So, I was able to change Bender's password without knowing his current one. 
 
+<br>
 
 ## Challenge 3 
 
