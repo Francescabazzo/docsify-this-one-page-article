@@ -1,709 +1,210 @@
-# My Open Publishing Space
+# Report on OWASP Juice Shop 
 
-## Create, Share and Collaborate
+#### Bazzo Francesca  IN2000240
 
-![Photo of Mountain](images/mountain.jpg)
 
-[Docsify](https://docsify.js.org/#/) can generate article, portfolio and documentation websites on the fly. Unlike Docusaurus, Hugo and many other Static Site Generators (SSG), it does not generate static html files. Instead, it smartly loads and parses your Markdown content files and displays them as a website.
 
 ## Introduction
 
-**Markdown** is a system-independent markup language that is easier to learn and use than **HTML**.
 
-![The Markdown Mark](images/markdown-red.png)  
-_Figure 1: The Markdown Mark_
+The **OWASP Juice Shop** is a web application that presents a wide number of vulnerabilities that are grouped in different categories, based on the type. 
 
-Some of the key benefits are:
+The objective of the user is to exploit as many vulnerabilities as possible; in other words, to solve as many challenges as possible. 
 
-1. Markdown is simple to learn, with minimal extra characters, so it's also quicker to write content.
-2. Less chance of errors when writing in markdown.
-3. Produces valid XHTML output.
-4. Keeps the content and the visual display separate, so you cannot mess up the look of your site.
-5. Write in any text editor or Markdown application you like.
-6. Markdown is a joy to use!
+In this report I explain how I managed to solve three challenges: 
+1. Login with Bender’s account; 
+2. Change Bender’s password into slurmCl4ssic; 
+3. Exfiltrate the entire DB schema definition via SQL Injection. 
 
-John Gruber, the author of Markdown, puts it like this:
 
-> The overriding design goal for Markdown’s formatting syntax is to make it as readable as possible. The idea is that a Markdown-formatted document should be publishable as-is, as plain text, without looking like it’s been marked up with tags or formatting instructions. While Markdown’s syntax has been influenced by several existing text-to-HTML filters, the single biggest source of inspiration for Markdown’s syntax is the format of plain text email.
-> -- <cite>John Gruber</cite>
+## Tools 
 
+I ran the **OWASP Juice Shop** on the hosting provider **Gitpod**. 
+To analyze the HTTP requests and responses I used **BURP**, a tool for web application security testing. The Burp’s tool “Repeater” was very useful, because it allowed me to modify HTTP requests and send them again. 
+I also used the **Kali Linux** virtual machine to understand how sqlite3 worked, but I will not go into detail in this report. 
 
-Without further delay, let us go over the main elements of Markdown and what the resulting HTML looks like:
 
-### Headings
+## Challenge 1 
 
-Headings from `h1` through `h6` are constructed with a `#` for each level:
+The objective of this challenge is to login with another user account, in this case Bender.
 
-```markdown
-# h1 Heading
-## h2 Heading
-### h3 Heading
-#### h4 Heading
-##### h5 Heading
-###### h6 Heading
-```
+In order to find Bender’s email address, it was necessary to discover the domain name. 
 
-Renders to:
+After logging in with my account (francesca@mail.com), I checked the calls on BURP. 
 
-<h1> h1 Heading </h1>
-<h2>  h2 Heading </h2>
-<h3>  h3 Heading </h3>
-<h4>  h4 Heading </h4>
-<h5>  h5 Heading </h5>
-<h6>  h6 Heading </h6>
-
-HTML:
-
-```html
-<h1>h1 Heading</h1>
-<h2>h2 Heading</h2>
-<h3>h3 Heading</h3>
-<h4>h4 Heading</h4>
-<h5>h5 Heading</h5>
-<h6>h6 Heading</h6>
-```
-
-### Comments
-
-Comments should be HTML compatible
-
-```html
-<!--
-This is a comment
--->
-```
-Comment below should **NOT** be seen:
-
-<!--
-This is a comment
--->
-
-### Horizontal Rules
-
-The HTML `<hr>` element is for creating a "thematic break" between paragraph-level elements. In markdown, you can create a `<hr>` with any of the following:
-
-* `___`: three consecutive underscores
-* `---`: three consecutive dashes
-* `***`: three consecutive asterisks
-
-renders to:
-
-___
-
----
-
-***
-
-
-### Body Copy
-
-Body copy written as normal, plain text will be wrapped with `<p></p>` tags in the rendered HTML.
-
-So this body copy:
-
-```markdown
-Lorem ipsum dolor sit amet, graecis denique ei vel, at duo primis mandamus. Et legere ocurreret pri, animal tacimates complectitur ad cum. Cu eum inermis inimicus efficiendi. Labore officiis his ex, soluta officiis concludaturque ei qui, vide sensibus vim ad.
-```
-renders to this HTML:
-
-```html
-<p>Lorem ipsum dolor sit amet, graecis denique ei vel, at duo primis mandamus. Et legere ocurreret pri, animal tacimates complectitur ad cum. Cu eum inermis inimicus efficiendi. Labore officiis his ex, soluta officiis concludaturque ei qui, vide sensibus vim ad.</p>
-```
-
-### Emphasis
-
-#### Bold
-For emphasizing a snippet of text with a heavier font-weight.
-
-The following snippet of text is **rendered as bold text**.
-
-```markdown
-**rendered as bold text**
-```
-renders to:
-
-**rendered as bold text**
-
-and this HTML
-
-```html
-<strong>rendered as bold text</strong>
-```
-
-#### Italics
-For emphasizing a snippet of text with italics.
-
-The following snippet of text is _rendered as italicized text_.
-
-```markdown
-_rendered as italicized text_
-```
-
-renders to:
-
-_rendered as italicized text_
-
-and this HTML:
-
-```html
-<em>rendered as italicized text</em>
-```
-
-
-#### strikethrough
-In GFM (GitHub flavored Markdown) you can do strikethroughs.
-
-```markdown
-~~Strike through this text.~~
-```
-Which renders to:
-
-~~Strike through this text.~~
-
-HTML:
-
-```html
-<del>Strike through this text.</del>
-```
-
-### Blockquotes
-For quoting blocks of content from another source within your document.
-
-Add `>` before any text you want to quote.
-
-```markdown
-> **Fusion Drive** combines a hard drive with a flash storage (solid-state drive) and presents it as a single logical volume with the space of both drives combined.
-```
-
-Renders to:
-
-> **Fusion Drive** combines a hard drive with a flash storage (solid-state drive) and presents it as a single logical volume with the space of both drives combined.
-
-and this HTML:
-
-```html
-<blockquote>
-  <p><strong>Fusion Drive</strong> combines a hard drive with a flash storage (solid-state drive) and presents it as a single logical volume with the space of both drives combined.</p>
-</blockquote>
-```
-
-Blockquotes can also be nested:
-
-```markdown
-> Donec massa lacus, ultricies a ullamcorper in, fermentum sed augue.
-Nunc augue augue, aliquam non hendrerit ac, commodo vel nisi.
->> Sed adipiscing elit vitae augue consectetur a gravida nunc vehicula. Donec auctor
-odio non est accumsan facilisis. Aliquam id turpis in dolor tincidunt mollis ac eu diam.
-```
-
-Renders to:
-
-> Donec massa lacus, ultricies a ullamcorper in, fermentum sed augue.
-Nunc augue augue, aliquam non hendrerit ac, commodo vel nisi.
->> Sed adipiscing elit vitae augue consectetur a gravida nunc vehicula. Donec auctor
-odio non est accumsan facilisis. Aliquam id turpis in dolor tincidunt mollis ac eu diam.
-
-### Lists
-
-#### Unordered
-A list of items in which the order of the items does not explicitly matter.
-
-You may use any of the following symbols to denote bullets for each list item:
-
-```markdown
-* valid bullet
-- valid bullet
-+ valid bullet
-```
-
-For example
-
-```markdown
-+ Lorem ipsum dolor sit amet
-+ Consectetur adipiscing elit
-+ Integer molestie lorem at massa
-+ Facilisis in pretium nisl aliquet
-+ Nulla volutpat aliquam velit
-  - Phasellus iaculis neque
-  - Purus sodales ultricies
-  - Vestibulum laoreet porttitor sem
-  - Ac tristique libero volutpat at
-+ Faucibus porta lacus fringilla vel
-+ Aenean sit amet erat nunc
-+ Eget porttitor lorem
-```
-Renders to:
-
-+ Lorem ipsum dolor sit amet
-+ Consectetur adipiscing elit
-+ Integer molestie lorem at massa
-+ Facilisis in pretium nisl aliquet
-+ Nulla volutpat aliquam velit
-  - Phasellus iaculis neque
-  - Purus sodales ultricies
-  - Vestibulum laoreet porttitor sem
-  - Ac tristique libero volutpat at
-+ Faucibus porta lacus fringilla vel
-+ Aenean sit amet erat nunc
-+ Eget porttitor lorem
-
-And this HTML
-
-```html
-<ul>
-  <li>Lorem ipsum dolor sit amet</li>
-  <li>Consectetur adipiscing elit</li>
-  <li>Integer molestie lorem at massa</li>
-  <li>Facilisis in pretium nisl aliquet</li>
-  <li>Nulla volutpat aliquam velit
-    <ul>
-      <li>Phasellus iaculis neque</li>
-      <li>Purus sodales ultricies</li>
-      <li>Vestibulum laoreet porttitor sem</li>
-      <li>Ac tristique libero volutpat at</li>
-    </ul>
-  </li>
-  <li>Faucibus porta lacus fringilla vel</li>
-  <li>Aenean sit amet erat nunc</li>
-  <li>Eget porttitor lorem</li>
-</ul>
-```
-
-#### Ordered
-
-A list of items in which the order of items does explicitly matter.
-
-```markdown
-1. Lorem ipsum dolor sit amet
-2. Consectetur adipiscing elit
-3. Integer molestie lorem at massa
-4. Facilisis in pretium nisl aliquet
-5. Nulla volutpat aliquam velit
-6. Faucibus porta lacus fringilla vel
-7. Aenean sit amet erat nunc
-8. Eget porttitor lorem
-```
-Renders to:
-
-1. Lorem ipsum dolor sit amet
-2. Consectetur adipiscing elit
-3. Integer molestie lorem at massa
-4. Facilisis in pretium nisl aliquet
-5. Nulla volutpat aliquam velit
-6. Faucibus porta lacus fringilla vel
-7. Aenean sit amet erat nunc
-8. Eget porttitor lorem
-
-And this HTML:
-
-```html
-<ol>
-  <li>Lorem ipsum dolor sit amet</li>
-  <li>Consectetur adipiscing elit</li>
-  <li>Integer molestie lorem at massa</li>
-  <li>Facilisis in pretium nisl aliquet</li>
-  <li>Nulla volutpat aliquam velit</li>
-  <li>Faucibus porta lacus fringilla vel</li>
-  <li>Aenean sit amet erat nunc</li>
-  <li>Eget porttitor lorem</li>
-</ol>
-```
-
-**TIP**: If you just use `1.` for each number, Markdown will automatically number each item. For example:
-
-```markdown
-1. Lorem ipsum dolor sit amet
-1. Consectetur adipiscing elit
-1. Integer molestie lorem at massa
-1. Facilisis in pretium nisl aliquet
-1. Nulla volutpat aliquam velit
-1. Faucibus porta lacus fringilla vel
-1. Aenean sit amet erat nunc
-1. Eget porttitor lorem
-```
-
-Renders to:
-
-1. Lorem ipsum dolor sit amet
-2. Consectetur adipiscing elit
-3. Integer molestie lorem at massa
-4. Facilisis in pretium nisl aliquet
-5. Nulla volutpat aliquam velit
-6. Faucibus porta lacus fringilla vel
-7. Aenean sit amet erat nunc
-8. Eget porttitor lorem
-
-### Code
-
-#### Inline code
-Wrap inline snippets of code with `` ` ``.
-
-```markdown
-In this example, `<section></section>` should be wrapped as **code**.
-```
-
-Renders to:
-
-In this example, `<section></section>` should be wrapped with **code**.
-
-HTML:
-
-```html
-<p>In this example, <code>&lt;section&gt;&lt;/section&gt;</code> should be wrapped with <strong>code</strong>.</p>
-```
-
-#### Indented code
-
-Or indent several lines of code by at least four spaces, as in:
+There was a GET request and the response was a JSON file, where there was the line: 
 
 <pre>
-  // Some comments
-  line 1 of code
-  line 2 of code
-  line 3 of code
-</pre>
-
-Renders to:
-
-    // Some comments
-    line 1 of code
-    line 2 of code
-    line 3 of code
-
-HTML:
-
-```html
-<pre>
-  <code>
-    // Some comments
-    line 1 of code
-    line 2 of code
-    line 3 of code
-  </code>
-</pre>
-```
-
-
-#### Block code "fences"
-
-Use "fences"  ```` ``` ```` to block in multiple lines of code.
-
-<pre>
-``` markup
-Sample text here...
-```
+"domain":"juice-sh.op"
 </pre>
 
 
-```
-Sample text here...
-```
+So, I could assume that the domain name is **juice-sh.op**.
 
-HTML:
+![First Image](images/ch1-1.jpg)  
+_Figure 1: GET Request where there is the domain name_
 
-```html
+
+At this point, I tried logging in with the email address “bender@juice-sh.op” and the password “test”. 
+
+I got the message: “Invalid email or password.” 
+
+I opened on BURP the HTTP POST request where the browser had sent the username and the password and I tried to see if there was a SQL injection vulnerability. 
+
+To do this, using the BURP repeater, I modified the email field and I put: "bender@juice-sh.op’--"
+
+The response was a 200 OK message, so I was able to login as Bender. 
+In the response there was a token that I decoded in the website jwt.io. It contained several pieces of information about Bender’s account, including his email and the hashed password. 
+
+![2nd Figure](images/ch1-2.jpg)
+_Figure 2: Successful Response_ 
+
+I was able to login as Bender because of a **SQL injection vulnerability**: to exploit it, I found a parameter that the web application passed through a database and, by carefully embedding a SQL command into the content of the parameter, I tricked the web application into forwarding a malicious query to the database.
+
+
+## Challenge 2 
+
+The objective of this challenge is to change Bender’s password into slurmCl4ssic without using SQL Injection or Forgot Password. 
+
+Because of the previous challenge, I knew how to login with Bender’s account by exploiting a vulnerability, so I did it by inserting “bender@juice-sh.op’--” in the email line and any password on the password line. 
+
+I went to the “Privacy and Security” section and then to the “Change Password” section. 
+I tried to change the password, but I got the error “401 Unauthorized” because “current password is not correct”; this was expected, because I do not know Bender's current password, since I was able to login with his account by exploiting an SQL injection vulnerability, and not by using his credentials.
+
+By inspecting the HTTP calls of the Password Change on BURP, I noticed that this process happens through an HTTP GET call and that current and new passwords are submitted in clear text: 
 <pre>
-  <code>Sample text here...</code>
-</pre>
-```
-
-#### Syntax highlighting
-
-GFM, or "GitHub Flavored Markdown" also supports syntax highlighting. To activate it, simply add the file extension of the language you want to use directly after the first code "fence", ` ```js `, and syntax highlighting will automatically be applied in the rendered HTML. For example, to apply syntax highlighting to JavaScript code:
-
-<pre>
-```js
-grunt.initConfig({
-  assemble: {
-    options: {
-      assets: 'docs/assets',
-      data: 'src/data/*.{json,yml}',
-      helpers: 'src/custom-helpers.js',
-      partials: ['src/partials/**/*.{hbs,md}']
-    },
-    pages: {
-      options: {
-        layout: 'default.hbs'
-      },
-      files: {
-        './': ['src/templates/pages/index.hbs']
-      }
-    }
-  }
-};
-```
+GET /rest/user/change-password?current=test&new=12345&repeat=12345 HTTP/2
 </pre>
 
-Renders to:
-
-```js
-grunt.initConfig({
-  assemble: {
-    options: {
-      assets: 'docs/assets',
-      data: 'src/data/*.{json,yml}',
-      helpers: 'src/custom-helpers.js',
-      partials: ['src/partials/**/*.{hbs,md}']
-    },
-    pages: {
-      options: {
-        layout: 'default.hbs'
-      },
-      files: {
-        './': ['src/templates/pages/index.hbs']
-      }
-    }
-  }
-};
-```
-
-### Tables
-Tables are created by adding pipes as dividers between each cell, and by adding a line of dashes (also separated by bars) beneath the header. Note that the pipes do not need to be vertically aligned.
-
-
-```markdown
-| Option | Description |
-| ------ | ----------- |
-| data   | path to data files to supply the data that will be passed into templates. |
-| engine | engine to be used for processing templates. Handlebars is the default. |
-| ext    | extension to be used for dest files. |
-```
-
-Renders to:
-
-| Option | Description |
-| ------ | ----------- |
-| data   | path to data files to supply the data that will be passed into templates. |
-| engine | engine to be used for processing templates. Handlebars is the default. |
-| ext    | extension to be used for dest files. |
-
-And this HTML:
-
-```html
-<table>
-  <tr>
-    <th>Option</th>
-    <th>Description</th>
-  </tr>
-  <tr>
-    <td>data</td>
-    <td>path to data files to supply the data that will be passed into templates.</td>
-  </tr>
-  <tr>
-    <td>engine</td>
-    <td>engine to be used for processing templates. Handlebars is the default.</td>
-  </tr>
-  <tr>
-    <td>ext</td>
-    <td>extension to be used for dest files.</td>
-  </tr>
-</table>
-```
-
-### Right aligned text
-
-Adding a colon on the right side of the dashes below any heading will right align text for that column.
-
-```markdown
-| Option | Description |
-| ------:| -----------:|
-| data   | path to data files to supply the data that will be passed into templates. |
-| engine | engine to be used for processing templates. Handlebars is the default. |
-| ext    | extension to be used for dest files. |
-```
-
-| Option | Description |
-| ------:| -----------:|
-| data   | path to data files to supply the data that will be passed into templates. |
-| engine | engine to be used for processing templates. Handlebars is the default. |
-| ext    | extension to be used for dest files. |
-
-### Links
-
-#### Basic link
-
-```markdown
-[Assemble](http://assemble.io)
-```
-
-Renders to (hover over the link, there is no tooltip):
-
-[Assemble](http://assemble.io)
-
-HTML:
-
-```html
-<a href="http://assemble.io">Assemble</a>
-```
+![Figure 3](images/ch2-1.jpg)
+_Figure 3: Request with passwords in cleartext_
 
+So, I tried to probe the responses on various inputs using the BURP repeater and, finally, I was able to change the password by submitting: 
+<pre>
+GET /rest/user/change-password?new=slurmCl4ssic&repeat=slurmCl4ssic HTTP/2
+</pre>
 
-#### Add a title
+![Figure 4](images/ch2-2.jpg)
+_Figure 4: Successful HTTP Request_ 
 
-```markdown
-[Upstage](https://github.com/upstage/ "Visit Upstage!")
-```
+So, I was able to change Bender's password without knowing his current one. 
 
-Renders to (hover over the link, there should be a tooltip):
 
-[Upstage](https://github.com/upstage/ "Visit Upstage!")
+## Challenge 3 
 
-HTML:
+The objective of this challenge is to exfiltrate the entire DB schema definition via SQL Injection. 
 
-```html
-<a href="https://github.com/upstage/" title="Visit Upstage!">Upstage</a>
-```
+The web application is a store that sells a variety of products, so there must be a database behind the catalog. 
 
-#### Named Anchors
+To learn more about the DB schema, I decided to analyze the HTTP requests and responses on Burp. 
+In order to do this, I searched several products through the search command on the site: I first search “banana juice” and then “apple’” (the website returned No Results Found). 
+On Burp I notices that there are only two requests regarding these two operations: 
 
-Named anchors enable you to jump to the specified anchor point on the same page. For example, each of these chapters:
+<pre>
+GET /rest/products/search?q= HTTP/2
+</pre>
+The browser returns as a response a JSON file with all the products that are present 
+on the shop. 
 
-```markdown
-# Table of Contents
-  * [Chapter 1](#chapter-1)
-  * [Chapter 2](#chapter-2)
-  * [Chapter 3](#chapter-3)
-```
-will jump to these sections:
+<pre>
+GET /api/Quantitys/ HTTP/2
+</pre>
+The browser returns a response as a JSON file with the quantity of each product present in the shop. 
 
-```markdown
-### Chapter 1 <a id="chapter-1"></a>
-Content for chapter one.
 
-### Chapter 2 <a id="chapter-2"></a>
-Content for chapter one.
+I sent the first request to the repeater to observe how the browser responds to requests with different values of the q parameter. 
 
-### Chapter 3 <a id="chapter-3"></a>
-Content for chapter one.
-```
-**NOTE** that specific placement of the anchor tag seems to be arbitrary. They are placed inline here since it seems to be unobtrusive, and it works.
+By changing the request to 
+<pre>
+GET /rest/products/search?q=banana HTTP/2
+</pre>
+the HTTP response is: 
+![Figure 5](images/ch3-1.jpg)
 
-### Images
-Images have a similar syntax to links but include a preceding exclamation point.
+By changing the request to
+<pre>
+GET /rest/products/search?q=banana’ HTTP/2
+</pre> 
+the HTTP response is: 
+![Figure 6](images/ch3-2.jpg)
 
-```markdown
-![Image of Minion](https://octodex.github.com/images/minion.png)
-```
-![Image of Minion](https://octodex.github.com/images/minion.png)
+From this error message, it is obvious that the database behind the shop is a SQLITE database. 
 
-and using a local image (which also displays in GitHub):
+At this point, I visited the SQLITE website to learn more about the schema of the SQLITE database and I found out that the schema is stored in a system table called sqlite_master. 
 
-```markdown
-![Image of Octocat](images/octocat.jpg)
-```
-![Image of Octocat](images/octocat.jpg)
+I then used the Kali Linux machine, where sqlite3 was already installed, to understand better how certain queries worked. 
 
-## Topic One  
+In order to find the schema of the database, it is possible to query from sqlite_master with the following query: 
+<pre>
+SELECT sql 
+FROM sqlite_master;
+</pre>
 
-Lorem markdownum in maior in corpore ingeniis: causa clivo est. Rogata Veneri terrebant habentem et oculos fornace primusque et pomaria et videri putri, levibus. Sati est novi tenens aut nitidum pars, spectabere favistis prima et capillis in candida spicis; sub tempora, aliquo.
+At this point, I went back to the Repeater’s tool in Burp and tried the known attacking pattern 
+<pre>
+‘))-- 
+</pre> 
+As expected, it worked. 
 
-## Topic Two
+This means that the **/rest/products/search endpoint** is susceptible to SQL Injection into the q parameter. This is a SQL injection vulnerability that I exploited to solve the challenge. 
 
-Lorem markdownum vides aram est sui istis excipis Danai elusaque manu fores.
-Illa hunc primo pinum pertulit conplevit portusque pace *tacuit* sincera. Iam
-tamen licentia exsulta patruelibus quam, deorum capit; vultu. Est *Philomela
-qua* sanguine fremit rigidos teneri cacumina anguis hospitio incidere sceptroque
-telum spectatorem at aequor.
+In order to exfiltrate the database schema, it was necessary to craft an attack payload which is a **UNION SELECT** merging the data from sqlite_master table into the products returned in the JSON result of the request. 
 
-## Topic Three
+By injecting 
+<pre>
+banana')) UNION SELECT * FROM sqlite_master--
+</pre> 
+the HTTP Response contained a SQLITE error message saying: 
+<pre>
+"SQLITE_ERROR: SELECTs to the left and right of UNION do not have the same number of result columns"
+</pre>
 
-### Overview
+At this point, the objective was  to find the right number of columns.
 
-Lorem markdownum vides aram est sui istis excipis Danai elusaque manu fores.
-Illa hunc primo pinum pertulit conplevit portusque pace *tacuit* sincera. Iam
-tamen licentia exsulta patruelibus quam, deorum capit; vultu. Est *Philomela
-qua* sanguine fremit rigidos teneri cacumina anguis hospitio incidere sceptroque
-telum spectatorem at aequor.
+I started with the following payload: 
+<pre>
+banana’))UNION SELECT '1' FROM sqlite_master-- 
+</pre>
 
-### Subtopic One
+I obtained the same error as before. I went on until I didn’t have an error message anymore. 
 
-Lorem markdownum murmure fidissime suumque. Nivea agris, duarum longaeque Ide
-rugis Bacchum patria tuus dea, sum Thyneius liquor, undique. **Nimium** nostri
-vidisset fluctibus **mansit** limite rigebant; enim satis exaudi attulit tot
-lanificae [indice](http://www.mozilla.org/) Tridentifer laesum. Movebo et fugit,
-limenque per ferre graves causa neque credi epulasque isque celebravit pisces.
 
-- Iasone filum nam rogat
-- Effugere modo esse
-- Comminus ecce nec manibus verba Persephonen taxo
-- Viribus Mater
-- Bello coeperunt viribus ultima fodiebant volentem spectat
-- Pallae tempora
+Finally, with the payload: 
+<pre>
+banana'))UNION SELECT '1','2','3','4','5','6','7','8','9' FROM sqlite_master-- 
+</pre>
 
-#### Fuit tela Caesareos tamen per balatum
+I obtained the following response: 
 
-De obstruat, cautes captare Iovem dixit gloria barba statque. Purpureum quid
-puerum dolosae excute, debere prodest **ignes**, per Zanclen pedes! *Ipsa ea
-tepebat*, fiunt, Actoridaeque super perterrita pulverulenta. Quem ira gemit
-hastarum sucoque, idem invidet qui possim mactatur insidiosa recentis, **res
-te** totumque [Capysque](http://tumblr.com/)! Modo suos, cum parvo coniuge, iam
-sceleris inquit operatus, abundet **excipit has**.
+![Figure 7](images/ch3-3.jpg)
 
-In locumque *perque* infelix hospite parente adducto aequora Ismarios,
-feritatis. Nomine amantem nexibus te *secum*, genitor est nervo! Putes
-similisque festumque. Dira custodia nec antro inornatos nota aris, ducere nam
-genero, virtus rite.
+With this message, I undesrsood that each product on the shop is described by nine attributes. 
 
-- Citius chlamydis saepe colorem paludosa territaque amoris
-- Hippolytus interdum
-- Ego uterque tibi canis
-- Tamen arbore trepidosque
+By injecting the attack payload 
+<pre>
+qwert'))UNION SELECT sql '1','2','3','4','5','6','7','8','9' FROM sqlite_master-- 
+</pre>
+the browser finally returned the database schema and, consequently, led me to solve the challenge. 
 
-#### Colit potiora ungues plumeus de glomerari num
 
-Conlapsa tamen innectens spes, in Tydides studio in puerili quod. Ab natis non
-**est aevi** esse riget agmenque nutrit fugacis.
+## Bibliography 
 
-- Coortis vox Pylius namque herbosas tuae excedere
-- Tellus terribilem saetae Echinadas arbore digna
-- Erraverit lectusque teste fecerat
+To write this report and solve the challenges I refered to the companion guide of the application: https://pwning.owasp-juice.shop/companion-guide/latest/index.html 
 
-Suoque descenderat illi; quaeritur ingens cum periclo quondam flaventibus onus
-caelum fecit bello naides ceciderunt cladis, enim. Sunt aliquis.
+I also consulted the SQLITE website (https://www.sqlite.org/index.html ) and, for understanding better how to do certain passages of the third challenge, I watched a video tutorial on Youtube (https://www.youtube.com/watch?v=0-D-e66U2Z0 )
 
-### Subtopic Two
 
-Lorem *markdownum saxum et* telum revellere in victus vultus cogamque ut quoque
-spectat pestiferaque siquid me molibus, mihi. Terret hinc quem Phoebus? Modo se
-cunctatus sidera. Erat avidas tamen antiquam; ignes igne Pelates
-[morte](http://www.youtube.com/watch?v=MghiBW3r65M) non caecaque canam Ancaeo
-contingat militis concitus, ad!
 
-#### Et omnis blanda fetum ortum levatus altoque
 
-Totos utinamque nutricis. Lycaona cum non sine vocatur tellus campus insignia et
-absumere pennas Cythereiadasque pericula meritumque Martem longius ait moras
-aspiciunt fatorum. Famulumque volvitur vultu terrae ut querellas hosti deponere
-et dixit est; in pondus fonte desertum. Condidit moras, Carpathius viros, tuta
-metum aethera occuluit merito mente tenebrosa et videtur ut Amor et una
-sonantia. Fuit quoque victa et, dum ora rapinae nec ipsa avertere lata, profugum
-*hectora candidus*!
 
-#### Et hanc
 
-Quo sic duae oculorum indignos pater, vis non veni arma pericli! Ita illos
-nitidique! Ignavo tibi in perdam, est tu precantia fuerat
-[revelli](http://jaspervdj.be/).
 
-Non Tmolus concussit propter, et setae tum, quod arida, spectata agitur, ferax,
-super. Lucemque adempto, et At tulit navem blandas, et quid rex, inducere? Plebe
-plus *cum ignes nondum*, fata sum arcus lustraverat tantis!
 
-#### Adulterium tamen instantiaque puniceum et formae patitur
 
-Sit paene [iactantem suos](http://www.metafilter.com/) turbineo Dorylas heros,
-triumphos aquis pavit. Formatae res Aeolidae nomen. Nolet avum quique summa
-cacumine dei malum solus.
 
-1. Mansit post ambrosiae terras
-2. Est habet formidatis grandior promissa femur nympharum
-3. Maestae flumina
-4. Sit more Trinacris vitasset tergo domoque
-5. Anxia tota tria
-6. Est quo faece nostri in fretum gurgite
 
-Themis susurro tura collo: cunas setius *norat*, Calydon. Hyaenam terret credens
-habenas communia causas vocat fugamque roganti Eleis illa ipsa id est madentis
-loca: Ampyx si quis. Videri grates trifida letum talia pectus sequeretur erat
-ignescere eburno e decolor terga.
 
-> Note: Example page content from [GetGrav.org](https://learn.getgrav.org/17/content/markdown), included to demonstrate the portability of Markdown-based content
+
+
+
+
