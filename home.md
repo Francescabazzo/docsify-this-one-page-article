@@ -1,8 +1,5 @@
 # Report on OWASP Juice Shop 
 
-#### Bazzo Francesca  IN2000240
-
-
 
 ## Introduction
 
