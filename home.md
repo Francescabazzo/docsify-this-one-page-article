@@ -76,7 +76,7 @@ By inspecting the HTTP calls of the Password Change on BURP, I noticed that this
 GET /rest/user/change-password?current=test&new=12345&repeat=12345 HTTP/2
 </pre>
 
-![Figure 3](images/ch2-1.jpg)
+![Figure 3](images/ch2-1.jpg) <br>
 _Figure 3: Request with passwords in cleartext_
 
 So, I tried to probe the responses on various inputs using the BURP repeater and, finally, I was able to change the password by submitting: 
