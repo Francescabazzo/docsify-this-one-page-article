@@ -133,7 +133,8 @@ the HTTP response is:
 
 From this error message, it is obvious that the database behind the shop is a **SQLITE database**. 
 
-At this point, I visited the SQLITE website to learn more about the schema of the SQLITE database and I found out that the schema is stored in a system table called sqlite_master. 
+At this point, I visited the SQLITE website to learn more about the schema of the SQLITE database and I found out that the schema is stored in a system table called **sqlite_master**. 
+This table also contains a column **sql** that holds the original CREATE TABLE or CREATE INDEX statement that created each table or index.
 
 I then used the Kali Linux machine, where sqlite3 was already installed, to understand better how certain queries worked. 
 
@@ -151,7 +152,7 @@ As expected, it worked.
 
 This means that the **/rest/products/search endpoint** is susceptible to SQL Injection into the q parameter. This is a SQL injection vulnerability that I exploited to solve the challenge. 
 
-In order to exfiltrate the database schema, it was necessary to craft an attack payload which is a **UNION SELECT** merging the data from sqlite_master table into the products returned in the JSON result of the request. 
+In order to exfiltrate the database schema, it was necessary to craft an attack payload which is a **UNION SELECT** merging the data from sqlite_master table into the Products table, which consists on the products returned in the previous JSON result.  
 
 By injecting 
 <pre>
@@ -162,7 +163,9 @@ the HTTP Response contained a SQLITE error message saying:
 "SQLITE_ERROR: SELECTs to the left and right of UNION do not have the same number of result columns"
 </pre>
 
+
 At this point, the objective was to find the right number of columns.
+In order to do this, I used static values ('1', '2', ...). 
 
 I started with the following payload: 
 <pre>
@@ -181,13 +184,15 @@ I obtained the following response:
 
 ![Figure 7](images/ch3-3.jpg)
 
-With this message, I undesrsood that each product on the shop is described by nine attributes. 
+With this message, I understood that the Products table has nine columns. 
 
-By injecting the attack payload 
+At this point, I only had to substitute one of the static value with the sql column, so, by injecting the attack payload 
 <pre>
-qwert'))UNION SELECT sql '1','2','3','4','5','6','7','8','9' FROM sqlite_master-- 
+qwert'))UNION SELECT sql,'2','3','4','5','6','7','8','9' FROM sqlite_master-- 
 </pre>
-the browser finally returned the database schema and, consequently, led me to solve the challenge. 
+I solved the challenge. 
+The sql column was put in place of the "id" column of the Products table. 
+The information obtained in this challenge can be used to exploit other information and do other attacks.  
 
 <br>
 
