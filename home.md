@@ -2,6 +2,10 @@
 
 <br>
 
+### Francesca Bazzo IN2000240
+
+<br>
+
 ## Introduction
 
 The **OWASP Juice Shop** is a web application that presents a wide number of vulnerabilities that are grouped in different categories, based on the type. 
@@ -105,15 +109,15 @@ On Burp I noticed that there are only two requests regarding these two operation
 <pre>
 GET /rest/products/search?q= HTTP/2
 </pre>
-The browser returns as a response a JSON file with all the products that are present 
+The browser returnED as a response a JSON file with all the products that are present 
 in the shop. 
 
 <pre>
 GET /api/Quantitys/ HTTP/2
 </pre>
-The browser returns a response as a JSON file with the quantity of each product present in the shop. 
+The browser returned a response as a JSON file with the quantity of each product present in the shop. 
 
-In the request none of the search words appeared. 
+In the requests none of the search words appeared. 
 
 I then sent the first request to the repeater to observe how the browser responds to requests with different values of the q parameter and if there is a SQL injection vulnerability.  
 
